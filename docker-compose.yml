@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  whatsapp-video-api:
+    image: muhammadgohar/whatsapp-ffmpeg-video-api:latest
+    container_name: whatsapp-video-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./auth_info_baileys:/app/auth_info_baileys
+      - ./temp_videos:/tmp/whatsapp-videos
+    environment:
+      - PORT=5000
+      - TEMP_DIR=/tmp/whatsapp-videos/
+      - MAX_VIDEO_SIZE_MB=100
+      - MAX_DOCUMENT_SIZE_MB=2000
+      - LOG_LEVEL=info
+      - DOWNLOAD_TIMEOUT=300000
+      - FFMPEG_TIMEOUT=600000
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  auth_info_baileys:
+  temp_videos:
