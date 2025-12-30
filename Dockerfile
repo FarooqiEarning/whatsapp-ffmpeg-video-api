@@ -1,30 +1,26 @@
-# Use official Python image as base
-FROM python:3.11-slim
+# Use official Node.js LTS image
+FROM node:18-alpine
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Install FFmpeg and other dependencies
+RUN apk add --no-cache ffmpeg
 
-# Set working directory
+# Create app directory
 WORKDIR /app
 
-# Install system dependencies including FFmpeg
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+# Copy package files first for better caching
+COPY package*.json ./
 
-# Copy requirements and install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies
+RUN npm install
 
-# Copy the application code
+# Copy source files
 COPY . .
 
-# Create the upload directory
-RUN mkdir -p now/upload
+# Create temp directory
+RUN mkdir -p /tmp/whatsapp-videos
 
-# Expose the port the app runs on
+# Expose the application port
 EXPOSE 5000
 
-# Command to run the application
-CMD ["python", "app.py"]
+# Start the application
+CMD ["node", "index.js"]
